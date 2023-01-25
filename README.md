@@ -1,43 +1,59 @@
-# Array Flatten
+![Async Logo](https://raw.githubusercontent.com/caolan/async/master/logo/async-logo_readme.jpg)
 
-[![NPM version][npm-image]][npm-url]
-[![NPM downloads][downloads-image]][downloads-url]
-[![Build status][travis-image]][travis-url]
-[![Test coverage][coveralls-image]][coveralls-url]
+![Github Actions CI status](https://github.com/caolan/async/actions/workflows/ci.yml/badge.svg)
+[![NPM version](https://img.shields.io/npm/v/async.svg)](https://www.npmjs.com/package/async)
+[![Coverage Status](https://coveralls.io/repos/caolan/async/badge.svg?branch=master)](https://coveralls.io/r/caolan/async?branch=master)
+[![Join the chat at https://gitter.im/caolan/async](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/caolan/async?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![jsDelivr Hits](https://data.jsdelivr.com/v1/package/npm/async/badge?style=rounded)](https://www.jsdelivr.com/package/npm/async)
 
-> Flatten an array of nested arrays into a single flat array. Accepts an optional depth.
+<!--
+|Linux|Windows|MacOS|
+|-|-|-|
+|[![Linux Build Status](https://dev.azure.com/caolanmcmahon/async/_apis/build/status/caolan.async?branchName=master&jobName=Linux&configuration=Linux%20node_10_x)](https://dev.azure.com/caolanmcmahon/async/_build/latest?definitionId=1&branchName=master) | [![Windows Build Status](https://dev.azure.com/caolanmcmahon/async/_apis/build/status/caolan.async?branchName=master&jobName=Windows&configuration=Windows%20node_10_x)](https://dev.azure.com/caolanmcmahon/async/_build/latest?definitionId=1&branchName=master) | [![MacOS Build Status](https://dev.azure.com/caolanmcmahon/async/_apis/build/status/caolan.async?branchName=master&jobName=OSX&configuration=OSX%20node_10_x)](https://dev.azure.com/caolanmcmahon/async/_build/latest?definitionId=1&branchName=master)| -->
 
-## Installation
+Async is a utility module which provides straight-forward, powerful functions for working with [asynchronous JavaScript](http://caolan.github.io/async/v3/global.html). Although originally designed for use with [Node.js](https://nodejs.org/) and installable via `npm i async`, it can also be used directly in the browser.  A ESM/MJS version is included in the main `async` package that should automatically be used with compatible bundlers such as Webpack and Rollup.
 
-```
-npm install array-flatten --save
-```
+A pure ESM version of Async is available as [`async-es`](https://www.npmjs.com/package/async-es).
 
-## Usage
+For Documentation, visit <https://caolan.github.io/async/>
+
+*For Async v1.5.x documentation, go [HERE](https://github.com/caolan/async/blob/v1.5.2/README.md)*
+
 
 ```javascript
-var flatten = require('array-flatten')
+// for use with Node-style callbacks...
+var async = require("async");
 
-flatten([1, [2, [3, [4, [5], 6], 7], 8], 9])
-//=> [1, 2, 3, 4, 5, 6, 7, 8, 9]
+var obj = {dev: "/dev.json", test: "/test.json", prod: "/prod.json"};
+var configs = {};
 
-flatten([1, [2, [3, [4, [5], 6], 7], 8], 9], 2)
-//=> [1, 2, 3, [4, [5], 6], 7, 8, 9]
-
-(function () {
-  flatten(arguments) //=> [1, 2, 3]
-})(1, [2, 3])
+async.forEachOf(obj, (value, key, callback) => {
+    fs.readFile(__dirname + value, "utf8", (err, data) => {
+        if (err) return callback(err);
+        try {
+            configs[key] = JSON.parse(data);
+        } catch (e) {
+            return callback(e);
+        }
+        callback();
+    });
+}, err => {
+    if (err) console.error(err.message);
+    // configs is now a map of JSON data
+    doSomethingWith(configs);
+});
 ```
 
-## License
+```javascript
+var async = require("async");
 
-MIT
-
-[npm-image]: https://img.shields.io/npm/v/array-flatten.svg?style=flat
-[npm-url]: https://npmjs.org/package/array-flatten
-[downloads-image]: https://img.shields.io/npm/dm/array-flatten.svg?style=flat
-[downloads-url]: https://npmjs.org/package/array-flatten
-[travis-image]: https://img.shields.io/travis/blakeembrey/array-flatten.svg?style=flat
-[travis-url]: https://travis-ci.org/blakeembrey/array-flatten
-[coveralls-image]: https://img.shields.io/coveralls/blakeembrey/array-flatten.svg?style=flat
-[coveralls-url]: https://coveralls.io/r/blakeembrey/array-flatten?branch=master
+// ...or ES2017 async functions
+async.mapLimit(urls, 5, async function(url) {
+    const response = await fetch(url)
+    return response.body
+}, (err, results) => {
+    if (err) throw err
+    // results is now an array of the response bodies
+    console.log(results)
+})
+```
